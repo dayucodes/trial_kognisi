@@ -1,1 +1,80 @@
+name: ETL to Snowflake
 
+on:
+  schedule:
+    - cron: '0 23 * * *'  # tiap hari jam 06:00 WIB (23:00 UTC)
+  workflow_dispatch:       # bisa dijalankan manual dari GitHub Actions tab
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run ETL
+        env:
+          # Snowflake
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+
+          # SSH + DB: MyKG
+          SSH_MYKG_HOST: ${{ secrets.SSH_MYKG_HOST }}
+          SSH_MYKG_PORT: ${{ secrets.SSH_MYKG_PORT }}
+          SSH_MYKG_USERNAME: ${{ secrets.SSH_MYKG_USERNAME }}
+          SSH_MYKG_PASSPHRASE: ${{ secrets.SSH_MYKG_PASSPHRASE }}
+          KEY_MYKG_ID_RSA_STREAMLIT: ${{ secrets.KEY_MYKG_ID_RSA_STREAMLIT }}
+          MYKG_HOST: ${{ secrets.MYKG_HOST }}
+          MYKG_PORT: ${{ secrets.MYKG_PORT }}
+          MYKG_USER: ${{ secrets.MYKG_USER }}
+          MYKG_PASSWORD: ${{ secrets.MYKG_PASSWORD }}
+          MYKG_DATABASE: ${{ secrets.MYKG_DATABASE }}
+
+          # SSH + DB: Kognisi.id
+          SSH_ID_HOST: ${{ secrets.SSH_ID_HOST }}
+          SSH_ID_PORT: ${{ secrets.SSH_ID_PORT }}
+          SSH_ID_USERNAME: ${{ secrets.SSH_ID_USERNAME }}
+          SSH_ID_PASSPHRASE: ${{ secrets.SSH_ID_PASSPHRASE }}
+          KEY_ID_ID_RSA_STREAMLIT: ${{ secrets.KEY_ID_ID_RSA_STREAMLIT }}
+          ID_HOST: ${{ secrets.ID_HOST }}
+          ID_PORT: ${{ secrets.ID_PORT }}
+          ID_USER: ${{ secrets.ID_USER }}
+          ID_PASSWORD: ${{ secrets.ID_PASSWORD }}
+          ID_DATABASE: ${{ secrets.ID_DATABASE }}
+
+          # SSH + DB: MyKGo
+          SSH_MYKGO_HOST: ${{ secrets.SSH_MYKGO_HOST }}
+          SSH_MYKGO_PORT: ${{ secrets.SSH_MYKGO_PORT }}
+          SSH_MYKGO_USERNAME: ${{ secrets.SSH_MYKGO_USERNAME }}
+          SSH_MYKGO_PASSPHRASE: ${{ secrets.SSH_MYKGO_PASSPHRASE }}
+          KEY_MYKGO_ID_RSA_STREAMLIT: ${{ secrets.KEY_MYKGO_ID_RSA_STREAMLIT }}
+          MYKGO_HOST: ${{ secrets.MYKGO_HOST }}
+          MYKGO_PORT: ${{ secrets.MYKGO_PORT }}
+          MYKGO_USER: ${{ secrets.MYKGO_USER }}
+          MYKGO_PASSWORD: ${{ secrets.MYKGO_PASSWORD }}
+          MYKGO_DATABASE: ${{ secrets.MYKGO_DATABASE }}
+
+          # DB: Discovery (direct, no SSH)
+          DISCOVERY_HOST: ${{ secrets.DISCOVERY_HOST }}
+          DISCOVERY_PORT: ${{ secrets.DISCOVERY_PORT }}
+          DISCOVERY_USER: ${{ secrets.DISCOVERY_USER }}
+          DISCOVERY_PASSWORD: ${{ secrets.DISCOVERY_PASSWORD }}
+          DISCOVERY_DATABASE: ${{ secrets.DISCOVERY_DATABASE }}
+
+          # Google Sheets
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+        run: python etl.py
